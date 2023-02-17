@@ -1,0 +1,15 @@
+export async function validateRole(pageRoles) {
+    if (Array.isArray(pageRoles)) {
+        for (const role of pageRoles)
+            if (checkRole(role)) return true
+        return false
+    }
+
+    if (checkRole(pageRoles)) return true
+    return false
+}
+
+
+function checkRole(role) {
+    return true
+}

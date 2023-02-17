@@ -1,0 +1,9 @@
+export const apFormStatus = {
+    active: 'Active',
+    expired: 'Expired'
+}
+
+
+export const apFormStatusFunc = async () => {
+    return apFormStatus
+}

@@ -1,0 +1,26 @@
+import { authorization,authentication } from 'wix-members-backend';
+const coachRoleId = "37f0e75b-bee8-4941-a0b9-1ffc1b67ab2b";
+export function myAssignRoleFunction() {
+  
+  
+  const options = {
+    suppressAuth: false
+  };
+
+  return authorization.assignRole(coachRoleId, memberId, options)
+    .then(() => {
+      console.log("Role assigned to member");
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+export async function register(email, password) {
+  const res = await authentication.register(email, password)
+  const memberId = res.member._id;
+  await authorization.assignRole(coachRoleId, memberId, {
+    suppressAuth: true,
+  });
+  console.log('Member Id', memberId)
+  return memberId;
+}

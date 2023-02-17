@@ -1,0 +1,19 @@
+
+
+
+const roleNames = {
+    '118047c6-bf2b-4bbd-b6c6-7dee97347466' : 'Parent',
+    '37f0e75b-bee8-4941-a0b9-1ffc1b67ab2b' : 'Coach',
+    '84e7be18-6f63-48f1-a3b6-5597b2387fb4' : 'Admin',
+}
+
+// this function is built to handle single role only
+export async function getRole(roles) {
+    const roleId = roles[0]._id;
+    if (Object.keys(roleNames).includes(roleId)) {
+        return roleNames[roleId];
+    }
+    return { error: 'Role not found' }
+}
+
+

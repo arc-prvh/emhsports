@@ -1,0 +1,15 @@
+export function redirectMember(role) {
+    if (role === 'Admin') {
+        console.log("Rdirecting to Admin Dashboard");
+        return '/admin-dashboard'
+    } else if (role === 'Coach') {
+        console.log('Redirecting to Coach Dashboard')
+        return '/coach-dashboard'
+    } else if (role === 'Parent') {
+        console.log('Redirecting to Parent Dashboard')
+        return '/parent-dashboard'
+    }else{
+        console.log('Login Error, no roles found')
+        return null;
+    }
+}
