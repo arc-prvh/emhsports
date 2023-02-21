@@ -1,0 +1,111 @@
+import { fetch } from 'wix-fetch';
+import wixData from 'wix-data';
+
+// GOOGLE API KEY SAM PERKINSON; perkins.net AIzaSyDM7oI_E0h-E7y033Pf5wzNXPB6tiKvMBY
+
+let key = 'AIzaSyDM7oI_E0h-E7y033Pf5wzNXPB6tiKvMBY'
+
+let key1 = "AIzaSyBf-1RohWpqwGmPvpliIehqb8yeM83Z87I"
+
+// AIzaSyBf-1RohWpqwGmPvpliIehqb8yeM83Z87I
+
+
+const apipart1 = "https://maps.googleapis.com/maps/api/place/autocomplete/json?";
+const apipart2 = "&key=";
+
+// function used for finding the predictions
+export function autocomplete(string) {
+var options = {
+  componentRestrictions: {country: "us"}
+ };
+//  "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=abc&components=country:us&key=ashjgdjgashj"
+ let input = "input=" + string;
+ let url = apipart1 + input +"&components=country:us"+ apipart2 + key1 ;
+ return fetch(url, { method: 'get' }).then((httpResponse) => {
+ if (httpResponse.ok) {
+ return httpResponse.json();
+        }
+    });
+}
+
+export async function geoFunction(zipcode) {
+
+    let craftUrl = `https://maps.googleapis.com/maps/api/geocode/json?key=${key}&components=postal_code:${zipcode}`
+    const url = craftUrl
+    return fetch(url, { method: 'get' }).then((httpResponse) => {
+        if (httpResponse.ok) {
+            return httpResponse.json();
+        } else {
+            console.log("nope", httpResponse.json());
+        }
+
+    })
+
+}
+
+export async function distance(lat1, long1, lat2, long2) {
+    // const key = "AIzaSyDU_U3VfCuqoaVXHA3mta3w-9ezn4KaFD4"
+    // const key = "AIzaSyBkfgoXgAyoEYeiWTmU60VIALU2Skioirg"
+    let crafterUrl = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&" + "origins=" + String(lat1) + ',' + String(long1) + "&destinations=" + String(lat2) + ',' + String(long2) +'&key=' + key1
+    // let crafterUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=40.659569%2C-73.933783%7C40.729029%2C-73.851524%7C40.6860072%2C-73.6334271%7C40.598566%2C-73.7527626&origins=40.6655101%2C-73.89188969999998&key=AIzaSyBf-1RohWpqwGmPvpliIehqb8yeM83Z87I`
+    const url = crafterUrl
+    return await fetch(url, { method: 'get' }).then((httpResponse) => {
+        if (httpResponse.ok) {
+            console.log("OK");
+            return httpResponse.json();
+        } else {
+            return httpResponse.json();
+        }
+    });
+}
+
+export async function distance1(originString, destinationString) {
+    // const key = "AIzaSyDU_U3VfCuqoaVXHA3mta3w-9ezn4KaFD4"
+    // const key = "AIzaSyBkfgoXgAyoEYeiWTmU60VIALU2Skioirg"
+    // let crafterUrl = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&" + "origins=" + String(lat1) + ',' + String(long1) + "&destinations=" + String(lat2) + ',' + String(long2) +'&key=' + key1
+    let crafterUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${destinationString}&origins=${originString}&key=AIzaSyBf-1RohWpqwGmPvpliIehqb8yeM83Z87I`
+    const url = crafterUrl
+    return await fetch(url, { method: 'get' }).then((httpResponse) => {
+        if (httpResponse.ok) {
+            console.log("OK");
+            return httpResponse.json();
+        } else {
+            return httpResponse.json();
+        }
+    });
+}
+
+
+export function getLatLong(placeId)
+{
+    let latlong = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${placeId}&key=${key1}`
+     return fetch(latlong, { method: 'get' }).then((httpResponse) => {
+        if (httpResponse.ok) {
+            console.log("OK");
+            return httpResponse.json();
+        } else {
+            console.log("oops it didn't work")
+        }
+    });
+}
+
+
+//testingRapidApi
+
+// export function calculateDistance(lat1,long1,lat2,long2)
+// {
+//     const options = {
+// 	method: 'GET',
+// 	headers: {
+// 		'Content-Type': 'application/json',
+// 		'X-RapidAPI-Key': 'f2bca39ba2msh8df8aa240b6239ap1d5979jsn1095b1afdd07',
+// 		'X-RapidAPI-Host': 'distance-calculator.p.rapidapi.com'
+// 	}
+//     };
+
+//     return fetch(`https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=${long1}&lat_2=${lat2}&long_2=${long2}&unit=miles&decimal_places=2`, options)
+//     .then(res=>{
+//         return res.json();
+//     })
+
+// }
