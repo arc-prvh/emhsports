@@ -51,6 +51,7 @@ function getSignUpData() {
 		city: $w('#city').value,
 		state: $w('#state').value,
 		zipCode: $w('#zipCode').value,
+		accountStatus: 'Active'
 	}
 }
 
