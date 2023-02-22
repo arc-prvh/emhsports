@@ -7,50 +7,48 @@ $w.onReady(function () {
         console.log('Unauthorised Role trying to access Admin\'s page')
         wixLocation.to('/');
     }
-    $w('#searchList').onItemReady(($item,itemData,index)=>{
+    $w('#searchList').onItemReady(($item, itemData, index) => {
+        console.log({itemData});
         $item('#name').text = itemData.name;
         $item('#email').text = itemData.email;
-        if(itemData.accountStatus=== 'Active'){
+        if (itemData.accountStatus === 'Active') {
             $item('#switch').checked = true;
-        }else{
+        } else {
             $item('#switch').checked = false;
         }
-        $item('#switch').onChange(()=>{
+        $item('#switch').onChange(() => {
             accountStatusChangeHandler(itemData._id);
         })
     })
 
+    // Resetting the Repeater
+    $w('#searchList').data = [];
 
     // Elements Mapped with Event Handlers
-    $w('#searchInput').onChange(searchInputHandler)
-
-
+    $w('#searchButton').onClick(searchButtonHandler);
 });
 
 // Event Handlers
 
-const searchInputHandler =async ()=>{
+const searchButtonHandler = async () => {
     const query = $w('#searchInput').value;
-    console.log({query});
-    const res = await wixData.query('Parents').include('name',query).or(wixData.query('Parents').include('email',query)).find();
-    if(res.totalCount === 0){
+    const res = await wixData.query('Parents').contains('name', query).or(wixData.query('Parents').contains('email', query)).find();
+    if (res.totalCount === 0) {
         console.log('No Match Found');
         return;
     }
     renderSearchList(res.items);
 }
 
-const accountStatusChangeHandler =async (id)=>{
-    const data =await wixData.get('Parents',id);
-    if(data.accountStatus === 'Active'){
+const accountStatusChangeHandler = async (id) => {
+    const data = await wixData.get('Parents', id);
+    if (data.accountStatus === 'Active') {
         data.accountStatus = 'Disabled';
-    }else{
+    } else {
         data.accountStatus = 'Active'
     }
     try {
-        // const res = wixData.update('Parents',data)
-        // console.log(res);
-        console.log('Account Status', data.accountStatus);
+        await wixData.update('Parents',data)
     } catch (error) {
         console.log(error);
     }
@@ -58,13 +56,14 @@ const accountStatusChangeHandler =async (id)=>{
 }
 
 // Custom Functions
-const renderSearchList =  (items)=>{
+const renderSearchList = (items) => {
     const repeaterData = [];
-    items.forEach(el=>{
+    items.forEach(el => {
         repeaterData.push({
-            _id: el.memberId,
-            name:el.name,
-            email:el.email
+            _id: el._id,
+            name: el.name,
+            email: el.email,
+            accountStatus: el.accountStatus
         })
     })
     $w('#searchList').data = repeaterData;
