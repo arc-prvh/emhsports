@@ -9,7 +9,6 @@ export async function autocomplete(string) {
     var options = {
         componentRestrictions: { country: "us" }
     };
-    //  "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=abc&components=country:us&key=ashjgdjgashj"
     let input = "input=" + string;
     let url = apipart1 + input + "&components=country:us" + apipart2 + key1;
     return fetch(url, { method: 'get' }).then((httpResponse) => {
