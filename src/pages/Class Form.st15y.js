@@ -37,8 +37,8 @@ $w.onReady(function () {
 
   // Repeaters OnItem Ready
   $w("#timeSlotRepeater").onItemReady(($item, itemData, index) => {
-    console.log({itemData});
-    $item("#selectedTime").text = `${itemData.day} ${itemData.timeSlot}`;
+    console.log({ itemData });
+    $item("#selectedTime").text = `Months:-${getMonthName(itemData.month)} | ${itemData.timeSlot}`;
     $item("#deleteTimeSlot").onClick(() => {
       deleteTimeSlotHandler(itemData._id);
     });
@@ -146,21 +146,23 @@ const addTimeSlotHandler = () => {
   const isInputValid = timeSlotInputValidator();
   if (!isInputValid) return;
   const shortTime = new Intl.DateTimeFormat("en", { timeStyle: "short" });
-  const [fromHour, fromMintute] = $w("#fromTime").value.slice(0, 5).split(":");
-  const [toHour, toMintute] = $w("#toTime").value.slice(0, 5).split(":");
-  const fromTime = new Date();
-  fromTime.setHours(parseInt(fromHour));
-  fromTime.setMinutes(parseInt(fromMintute));
-  const fromTimeString = shortTime.format(fromTime);
-  const toTime = new Date();
-  toTime.setHours(parseInt(toHour));
-  toTime.setMinutes(parseInt(toMintute));
-  if (fromTime > toTime) {
+  const [startHour, startMintute] = $w("#fromTime")
+    .value.slice(0, 5)
+    .split(":");
+  const [endHour, endMintute] = $w("#toTime").value.slice(0, 5).split(":");
+  const startTime = new Date();
+  startTime.setHours(parseInt(startHour));
+  startTime.setMinutes(parseInt(startMintute));
+  const startTimeString = shortTime.format(startTime);
+  const endTime = new Date();
+  endTime.setHours(parseInt(endHour));
+  endTime.setMinutes(parseInt(endMintute));
+  if (startTime > endTime) {
     console.log("From Time should be less than to time");
     $w("#fromTime").focus();
     return;
   }
-  const toTimeString = shortTime.format(toTime);
+  const endTimeString = shortTime.format(endTime);
   const day = $w("#day").value;
   const month = $w("#month").value;
   let monthDates = getAllDays(month, day);
@@ -171,15 +173,18 @@ const addTimeSlotHandler = () => {
     monthDatesString += `${el.date} | `;
   });
   repeaterData.push({
-    _id: `${month}${day}${fromTime.toTimeString()}${toTime.toTimeString()}`,
-    timeSlot: `Time Slot:-${fromTimeString} - ${toTimeString} | Day:- ${getDayName(day)} | Date:- ${monthDatesString}`,
-    startTime: fromTimeString,
-    endTime: toTimeString,
+    _id: `${month}${day}${startHour}${startMintute}${endHour}${endMintute}`,
+    timeSlot: `Time Slot:-${startTimeString} - ${endTimeString} | Day:- ${getDayName(
+      day
+    )} | Date:- ${monthDatesString}`,
+    startTime: startTimeString,
+    endTime: endTimeString,
     day,
     monthDates,
     month,
   });
   repeaterData.sort((a, b) => (a._id > b._id ? 1 : b._id > a._id ? -1 : 0));
+  console.log(repeaterData);
   $w("#timeSlotRepeater").data = repeaterData;
   console.log(timeSlotRepeaterValidator());
 };
@@ -283,8 +288,54 @@ const getInputTimeSlot = () => {
   return timeSlots;
 };
 
+const formatDataForAddressRepeater = (address) => {
+  const formattedData = [];
+  address.forEach((el) => {
+    formattedData.push({
+      _id: Math.floor(Math.random() * 10000).toString(),
+      parkType: el.parkType,
+      parkAddress: el.parkAddress,
+      gMap: el.gMap,
+    });
+  });
+  return formattedData;
+};
+
+const formatDataForTimeSlotRepeater = (timeSlot) => {
+  const formattedData = [];
+  timeSlot.forEach((el) => {
+    let id = null;
+    if (el._id) {
+      id = el._id;
+    } else {
+      id = Math.floor(Math.random() * 10000).toString();
+    }
+    let monthDates = "";
+    if (el.months && el.months?.length > 0) {
+      el.months.forEach((el) => {
+        monthDates += `${el.date} | `;
+      });
+    }
+    let monthDatesString = ` | Date:- ${monthDates}`;
+    if(monthDates.length === 0){
+      monthDatesString = '';
+    }
+    formattedData.push({
+      _id: id,
+      timeSlot: `Time Slot:-${el.startTime} - ${
+        el.endTime
+      } | Day:- ${getDayName(el.day)} ${monthDatesString}`,
+      startTime: el.startTime,
+      endTime: el.endTime,
+      el: el.day,
+      monthDates: el.monthDates,
+      month: el.month,
+    });
+  });
+  return formattedData;
+};
+
 const formatDataForPackageRepater = (classPackage) => {
-  console.log({ classPackage });
   const formattedData = [];
   classPackage.forEach((el) => {
     formattedData.push({
@@ -408,24 +459,19 @@ const loadFormData = (classId) => {
       } else {
         $w("#classStatus").selectedIndex = 1;
       }
-      $w("#timeSlotRepeater").data = [
-        {
-          _id: `${Math.floor(Math.random() * 1000)}`,
-          timeSlot: `${classData.startTime} - ${classData.endTime}`,
-          startTime: classData.startTime,
-          endTime: classData.endTime,
-          day: classData.day,
-        },
-      ];
+      $w("#timeSlotRepeater").data = formatDataForTimeSlotRepeater(
+        classData.timeslot
+      );
+      $w("#addressRepeater").data = formatDataForAddressRepeater(
+        classData.formattedAddress
+      );
       $w("#instruction").value = classData.instruction;
       $w("#notice").value = classData.notice;
       $w("#parkHistory").value = "";
       const packageRepeaterData = formatDataForPackageRepater(
         classData.package
       );
-      console.log({ packageRepeaterData });
       $w("#packageRepeater").data = packageRepeaterData;
-
       if (classData.classType === "virtual") {
         disableFiledsNotRequiredForVirtualClass();
       }
