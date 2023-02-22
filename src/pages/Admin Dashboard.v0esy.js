@@ -24,6 +24,7 @@ $w.onReady(function () {
     $w('#deleteClassButton').onClick(deleteClassHandler);
     $w('#enableDisableStudentButton').onClick(enableDisableStudentHandler);
     $w('#enableDisableParentButton').onClick(enableDisableParentHandler);
+    $w('#enableDisableCoachButton').onClick(enableDisableCoachHandler);
 
 
     $w('#dashboardButton').onClick(() => {
@@ -34,6 +35,9 @@ $w.onReady(function () {
     })
     $w('#manageParentButton').onClick(() => {
         $w('#multiStateBox1').changeState('manageParent');
+    })
+    $w('#manageCoachButton').onClick(() => {
+        $w('#multiStateBox1').changeState('manageCoach');
     })
     $w('#manageStudentButton').onClick(() => {
         $w('#multiStateBox1').changeState('manageStudent');
@@ -113,10 +117,13 @@ function startAnimation(finalCount) {
 // Event Handlers
 
 const enableDisableStudentHandler = ()=>{
-    wixLocation.to('/enable-disable-student');
+    wixLocation.to('/enable-disable-school');
 }
 const enableDisableParentHandler = ()=>{
     wixLocation.to('/enable-disable-parent');
+}
+const enableDisableCoachHandler = ()=>{
+    wixLocation.to('/enable-disable-coach');
 }
 const createClassHandler = () => {
     // const pageUrl = "https://pravaah.editorx.io/emhsports/class-form?mode=modeValue&classId=classValue
