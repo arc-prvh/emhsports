@@ -10,7 +10,11 @@ const currentlySelectedAddress = {
   parkAddress: null,
   gMap: null,
 };
-
+let queries = {
+  mode:null,
+  classId:null,
+}
+let coachesListOptions = [];
 // For Development Purpose Only. These values will be fetched from url but editorx preview do not support.
 // const pageUrl = "https://pravaah.editorx.io/emhsports/class-form?mode=modeValue&classId=classValue
 //  modeValue can be of 1. read , 2. create , 3. edit
@@ -19,7 +23,7 @@ $w.onReady(function () {
   // if(!authentication.loggedIn()){
   //     wixLocation.to('/login');
   // }
-  const queries = wixLocation.query;
+  queries = wixLocation.query;
   let viewMode = wixWindow.viewMode;
   if (viewMode === "Preview") {
     queries.mode = "edit";
@@ -36,16 +40,21 @@ $w.onReady(function () {
   }
 
   // Repeaters OnItem Ready
+
+  $w("#parkHistoryRepeater").onItemReady(($item, itemData, index) => {
+    $item("#parkHistory").text = itemData.parkHistory;
+  });
+
   $w("#timeSlotRepeater").onItemReady(($item, itemData, index) => {
-    console.log({itemData});
-    $item("#selectedTime").text = `${itemData.day} ${itemData.timeSlot}`;
+    $item("#selectedTime").text = `Months:-${getMonthName(itemData.month)} | ${
+      itemData.timeSlot
+    }`;
     $item("#deleteTimeSlot").onClick(() => {
       deleteTimeSlotHandler(itemData._id);
     });
   });
 
   $w("#packageRepeater").onItemReady(($item, itemData, index) => {
-    console.log({ itemData });
     $item("#packageName").value = itemData.packageName;
     $item("#packagePrice").value = itemData.packageCost;
     $item("#packageDescription").value = itemData.packageDescription;
@@ -66,11 +75,11 @@ $w.onReady(function () {
       currentlySelectedAddress.parkAddress = itemData.address;
       currentlySelectedAddress.gMap = src;
       $w("#googleMap").postMessage(src);
+      $w('#addAddress').enable();
       $w("#repeaterSuggestion").collapse();
     });
   });
   $w("#addressRepeater").onItemReady(($item, itemData, index) => {
-    console.log({ itemData });
     $item("#address").text = itemData.parkAddress;
     if (itemData.parkType === "primary") {
       $item("#isPrimary").checked = true;
@@ -93,6 +102,10 @@ $w.onReady(function () {
   // Resetting Repeaters
   $w("#timeSlotRepeater").data = [];
   $w("#addressRepeater").data = [];
+  $w("#parkHistoryRepeater").data = [];
+
+  // Loading Coach Data.
+  getCoachData();
 });
 
 // Event Handlers
@@ -111,6 +124,7 @@ const makePrimaryHandler = (id) => {
 };
 
 const queryLocationHandler = () => {
+  $w('#addAddress').disable();
   autocomplete($w("#queryLocation").value).then((res) => {
     let predictions = res.predictions; // For simplicity we put the predictions in a new variable
     let suggestions = []; // We should create an empty array for the suggestions
@@ -124,7 +138,6 @@ const queryLocationHandler = () => {
       suggestions.push(item);
     });
 
-    console.log(predictions);
     $w("#repeaterSuggestion").data = []; // clear the repeater contents
     $w("#repeaterSuggestion").data = suggestions; // add the new suggestions to the repeater
     $w("#repeaterSuggestion").expand(); // Repeater is full now, let's show it.
@@ -138,29 +151,31 @@ const addAddressHandler = () => {
     _id: Math.floor(Math.random() * 10000).toString(),
     ...currentlySelectedAddress,
   });
-  console.log({ repeaterData });
   $w("#addressRepeater").data = repeaterData;
+  $w('#addAddress').disable();
 };
 
 const addTimeSlotHandler = () => {
   const isInputValid = timeSlotInputValidator();
   if (!isInputValid) return;
   const shortTime = new Intl.DateTimeFormat("en", { timeStyle: "short" });
-  const [fromHour, fromMintute] = $w("#fromTime").value.slice(0, 5).split(":");
-  const [toHour, toMintute] = $w("#toTime").value.slice(0, 5).split(":");
-  const fromTime = new Date();
-  fromTime.setHours(parseInt(fromHour));
-  fromTime.setMinutes(parseInt(fromMintute));
-  const fromTimeString = shortTime.format(fromTime);
-  const toTime = new Date();
-  toTime.setHours(parseInt(toHour));
-  toTime.setMinutes(parseInt(toMintute));
-  if (fromTime > toTime) {
+  const [startHour, startMintute] = $w("#fromTime")
+    .value.slice(0, 5)
+    .split(":");
+  const [endHour, endMintute] = $w("#toTime").value.slice(0, 5).split(":");
+  const startTime = new Date();
+  startTime.setHours(parseInt(startHour));
+  startTime.setMinutes(parseInt(startMintute));
+  const startTimeString = shortTime.format(startTime);
+  const endTime = new Date();
+  endTime.setHours(parseInt(endHour));
+  endTime.setMinutes(parseInt(endMintute));
+  if (startTime > endTime) {
     console.log("From Time should be less than to time");
     $w("#fromTime").focus();
     return;
   }
-  const toTimeString = shortTime.format(toTime);
+  const endTimeString = shortTime.format(endTime);
   const day = $w("#day").value;
   const month = $w("#month").value;
   let monthDates = getAllDays(month, day);
@@ -170,14 +185,29 @@ const addTimeSlotHandler = () => {
   monthDates.forEach((el) => {
     monthDatesString += `${el.date} | `;
   });
+  let assignedCoachId = null;
+  try {
+    if($w('#selectCoach').value === 'null'){
+      throw new Error('Coach is not assigned to a slot');
+    }else{
+      assignedCoachId = $w('#selectCoach').value;
+    }  
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+  
   repeaterData.push({
-    _id: `${month}${day}${fromTime.toTimeString()}${toTime.toTimeString()}`,
-    timeSlot: `Time Slot:-${fromTimeString} - ${toTimeString} | Day:- ${getDayName(day)} | Date:- ${monthDatesString}`,
-    startTime: fromTimeString,
-    endTime: toTimeString,
+    _id: `${month}${day}${startHour}${startMintute}${endHour}${endMintute}`,
+    timeSlot: `Time Slot:-${startTimeString} - ${endTimeString} | Day:- ${getDayName(
+      day
+    )} | Date:- ${monthDatesString}`,
+    startTime: startTimeString,
+    endTime: endTimeString,
     day,
     monthDates,
     month,
+    assignedCoachId,
   });
   repeaterData.sort((a, b) => (a._id > b._id ? 1 : b._id > a._id ? -1 : 0));
   $w("#timeSlotRepeater").data = repeaterData;
@@ -221,38 +251,39 @@ const removePackageHandler = (id) => {
 
 const createClassHandler = () => {
   const errors = [];
-  errors.push(...inputValidator());
-  errors.push(timeSlotRepeaterValidator());
-  errors.push(packageRepeaterValidator());
+  errors.push(...inputValidator(),timeSlotRepeaterValidator(),...packageRepeaterValidator(),...addressRepeaterValidator());
+  console.log({errors});
   let allErrorText = "";
   errors.forEach((el) => {
-    if (el !== null) {
+    if (el || el.length!==0) {
       allErrorText += `${el}\n`;
     }
   });
+  console.log({allErrorText});
   if (allErrorText.length > 0) {
     $w("#allErrors").text = allErrorText;
     $w("#allErrors").expand();
   } else {
+    console.log("Logging Form Data");
     console.log(getFormData());
 
-    // const toInsert = getFormData();
-    // if (queries.mode === 'edit') {
-    //     toInsert._id = classId
-    //     wixData.update('Classes', toInsert)
-    //         .then(res => {
-    //             console.log(res);
-    //         }).catch(err => {
-    //             console.log(err);
-    //         })
-    // } else if (queries.mode === 'create') {
-    //     wixData.insert('Classes', toInsert)
-    //         .then(res => {
-    //             console.log(res);
-    //         }).catch(err => {
-    //             console.log(err);
-    //         })
-    // }
+    const toInsert = getFormData();
+    if (queries.mode === 'edit') {
+        toInsert._id = queries.classId
+        wixData.update('Classes', toInsert)
+            .then(res => {
+                console.log(res);
+            }).catch(err => {
+                console.log(err);
+            })
+    } else if (queries.mode === 'create') {
+        wixData.insert('Classes', toInsert)
+            .then(res => {
+                console.log(res);
+            }).catch(err => {
+                console.log(err);
+            })
+    }
   }
 };
 
@@ -274,17 +305,66 @@ const getInputTimeSlot = () => {
   const timeSlots = [];
   $w("#timeSlotRepeater").forEachItem(($item, itemData, index) => {
     timeSlots.push({
+      _id:itemData._id,
       month: itemData.month,
       day: itemData.day,
       startTime: itemData.startTime,
       endTime: itemData.endTime,
+      monthDates:itemData.monthDates,
+      assignedCoachId:itemData.assignedCoachId,
     });
   });
   return timeSlots;
 };
 
+const formatDataForAddressRepeater = (address) => {
+  const formattedData = [];
+  address.forEach((el) => {
+    formattedData.push({
+      _id: Math.floor(Math.random() * 10000).toString(),
+      parkType: el.parkType,
+      parkAddress: el.parkAddress,
+      gMap: el.gMap,
+    });
+  });
+  return formattedData;
+};
+
+const formatDataForTimeSlotRepeater = (timeSlot) => {
+  const formattedData = [];
+  timeSlot.forEach((el) => {
+    let id = null;
+    if (el._id) {
+      id = el._id;
+    } else {
+      id = Math.floor(Math.random() * 10000).toString();
+    }
+    let monthDates = "";
+    if (el.monthDates && el.monthDates?.length > 0) {
+      el.monthDates.forEach((el) => {
+        monthDates += `${el.date} | `;
+      });
+    }
+    let monthDatesString = ` | Date:- ${monthDates}`;
+    if (monthDates.length === 0) {
+      monthDatesString = "";
+    }
+    formattedData.push({
+      _id: id,
+      timeSlot: `Time Slot:-${el.startTime} - ${
+        el.endTime
+      } | Day:- ${getDayName(el.day)} ${monthDatesString}`,
+      startTime: el.startTime,
+      endTime: el.endTime,
+      day: el.day,
+      monthDates: el.monthDates,
+      month: el.month,
+    });
+  });
+  return formattedData;
+};
+
 const formatDataForPackageRepater = (classPackage) => {
-  console.log({ classPackage });
   const formattedData = [];
   classPackage.forEach((el) => {
     formattedData.push({
@@ -292,6 +372,19 @@ const formatDataForPackageRepater = (classPackage) => {
       packageName: el.name,
       packageCost: el.cost,
       packageDescription: el.description,
+    });
+  });
+  return formattedData;
+};
+
+const formatDataForParkHistoryRepeater = (parkHistory) => {
+  const formattedData = [];
+  parkHistory.forEach((el) => {
+    console.log({el});
+    formattedData.push({
+      _id: Math.floor(Math.random() * 10000).toString(),
+      timeStamp: el.timeStamp,
+      parkHistory: el.parkHistory,
     });
   });
   return formattedData;
@@ -323,8 +416,8 @@ const inputValidator = () => {
     const label = $w(`#notice`).label;
     error.push(`${label} is Required`);
   }
-  if ($w(`#parkHistory`).value === "") {
-    const label = $w(`#parkHistory`).label;
+  if ($w(`#parkHistoryInput`).value === "") {
+    const label = $w(`#parkHistoryInput`).label;
     error.push(`${label} is Required`);
   }
   return error;
@@ -339,16 +432,34 @@ const timeSlotInputValidator = () => {
     error += `${$w("#day").label} is required`;
   }
   if ($w("#fromTime").value === "") {
-    error += `From time is required`;
+    error += `Start time is required`;
   }
   if ($w("#fromTime").value === "") {
-    error += `To time is required`;
+    error += `End time is required`;
+  }
+  if($w('#selectCoach').value === 'null' || $w('#selectCoach').value === ''){
+    error += `Coach is Required`;
   }
   if (error === "") {
     return true;
   } else {
     return false;
   }
+};
+const addressRepeaterValidator = () => {
+  let error = "";
+  if ($w("#classType").value === "virtual") return error;
+  if ($w("#addressRepeater").data.length === 0) {
+    error += "No Address found";
+  }
+  let isPrimaryPresent = false
+  $w("#addressRepeater").forEachItem(($item, itemData, index) => {
+    if (itemData.parkType === "primary") isPrimaryPresent = true;
+  });
+  if(!isPrimaryPresent){
+    error+="Primary Park Address is required";
+  }
+  return error;
 };
 const timeSlotRepeaterValidator = () => {
   let error = "";
@@ -375,7 +486,7 @@ const timeSlotRepeaterValidator = () => {
 };
 
 const packageRepeaterValidator = () => {
-  let error = null;
+  let error = '';
   $w("#packageRepeater").forEachItem(($item, itemData, index) => {
     if (
       $item("#packageName").value == "" ||
@@ -408,24 +519,23 @@ const loadFormData = (classId) => {
       } else {
         $w("#classStatus").selectedIndex = 1;
       }
-      $w("#timeSlotRepeater").data = [
-        {
-          _id: `${Math.floor(Math.random() * 1000)}`,
-          timeSlot: `${classData.startTime} - ${classData.endTime}`,
-          startTime: classData.startTime,
-          endTime: classData.endTime,
-          day: classData.day,
-        },
-      ];
+      $w("#timeSlotRepeater").data = formatDataForTimeSlotRepeater(
+        classData.timeslot
+      );
+      $w("#addressRepeater").data = formatDataForAddressRepeater(
+        classData.formattedAddress
+      );
       $w("#instruction").value = classData.instruction;
       $w("#notice").value = classData.notice;
-      $w("#parkHistory").value = "";
+      if(classData.classHistory){
+        $w("#parkHistoryRepeater").data = formatDataForParkHistoryRepeater(
+        classData.classHistory
+      );
+      }
       const packageRepeaterData = formatDataForPackageRepater(
         classData.package
       );
-      console.log({ packageRepeaterData });
       $w("#packageRepeater").data = packageRepeaterData;
-
       if (classData.classType === "virtual") {
         disableFiledsNotRequiredForVirtualClass();
       }
@@ -450,7 +560,7 @@ const makeFormReadOnly = () => {
   $w(`#addAddress`).disable();
   $w(`#instruction`).disable();
   $w(`#notice`).disable();
-  $w(`#parkHistory`).disable();
+  $w(`#parkHistoryInput`).disable();
   $w(`#packageName`).disable();
   $w(`#packageDescription`).disable();
   $w(`#packagePrice`).disable();
@@ -466,16 +576,10 @@ const getFormData = () => {
   const classType = $w("#classType").value;
   const classStatus = $w("#classStatus").value;
   const timeSlot = getInputTimeSlot();
-  //   const primaryAddress = {
-  //     parkType: "primary",
-  //     parkAddress: $w("#primaryParkAddress").value,
-  //     gMap: $w("#primaryParkGmap").value,
-  //   };
-  // const alternateAddresses = getAlternateParkAddress();
-  //   const formattedAddress = [primaryAddress, ...alternateAddresses];
+  const formattedAddress = getParkAddress();
   const instruction = $w("#instruction").value;
   const notice = $w("#notice").value;
-  const parkHistory = $w("#parkHistory").value;
+  const parkHistory = getParkHistory();
   const classPackage = getInputPackages();
   const classData = {
     parkName,
@@ -487,10 +591,10 @@ const getFormData = () => {
     timeslot: timeSlot,
     classType,
     status: classStatus,
-    // formattedAddress,
+    formattedAddress,
     instruction,
     notice,
-    classHistory: [parkHistory],
+    classHistory: [...parkHistory],
   };
   return classData;
 };
@@ -570,3 +674,50 @@ const getMonthName = (month) => {
   ];
   return months[parseInt(month) - 1];
 };
+
+const getParkHistory = () => {
+  const parkHistory = [];
+  $w("#parkHistoryRepeater").forEachItem(($item, itemData, index) => {
+    parkHistory.push({
+      timeStamp: itemData.timeStamp,
+      parkHistory: itemData.parkHistory,
+    });
+  });
+  parkHistory.push({
+    timeStamp: new Date().toISOString(),
+    parkHistory: $w("#parkHistoryInput").value,
+  });
+  return parkHistory;
+};
+
+const getParkAddress = () => {
+  const parkAddress = [];
+  $w("#addressRepeater").forEachItem(($item, itemData, index) => {
+    parkAddress.push({
+      parkType: itemData.parkType,
+      parkAddress: itemData.parkAddress,
+      gMap: itemData.gMap,
+    });
+  });
+  return parkAddress;
+};
+
+const getCoachData =async ()=>{
+  let res = null;
+  try {
+    res = await wixData.query('Coach').find();
+    if(res.totalCount === 0) throw new Error('Unable to get data from database');
+    res.items.forEach(el=>{
+      coachesListOptions.push({
+        label:el.name,
+        value:el._id
+      })
+    })
+    $w('#selectCoach').options = coachesListOptions;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
+

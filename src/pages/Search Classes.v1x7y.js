@@ -561,7 +561,7 @@ const getAllDaysOfTimeSlot = (currentMonthText, timeSlot) => {
     timeSlot.forEach(el => {
         if (el.month === currentMonthText) {
             month = el?.month;
-            day = el?.month;
+            day = el?.day;
             return;
         }
     });
