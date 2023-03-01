@@ -25,6 +25,7 @@ $w.onReady(function () {
     $w('#enableDisableStudentButton').onClick(enableDisableStudentHandler);
     $w('#enableDisableParentButton').onClick(enableDisableParentHandler);
     $w('#enableDisableCoachButton').onClick(enableDisableCoachHandler);
+    $w('#approveCoachButton').onClick(approveCoachHandler);
 
 
     $w('#dashboardButton').onClick(() => {
@@ -115,6 +116,10 @@ function startAnimation(finalCount) {
 }
 
 // Event Handlers
+
+const approveCoachHandler = ()=>{
+    wixLocation.to('/approve-coach')
+}
 
 const enableDisableStudentHandler = ()=>{
     wixLocation.to('/enable-disable-school');

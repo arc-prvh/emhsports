@@ -5,6 +5,11 @@ import wixLocation from "wix-location";
 import { currentMember, authentication } from "wix-members";
 import { local } from "wix-storage";
 import wixWindow from "wix-window";
+import wixData from "wix-data";
+import wixLocation from "wix-location";
+import { currentMember, authentication } from "wix-members";
+import { local } from "wix-storage";
+import wixWindow from "wix-window";
 
 /* -------------------------------Constants Start ---------------------------------------- */
 // --- Message Constants ---

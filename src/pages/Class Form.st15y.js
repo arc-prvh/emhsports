@@ -11,9 +11,9 @@ const currentlySelectedAddress = {
   gMap: null,
 };
 let queries = {
-  mode:null,
-  classId:null,
-}
+  mode: null,
+  classId: null,
+};
 let coachesListOptions = [];
 // For Development Purpose Only. These values will be fetched from url but editorx preview do not support.
 // const pageUrl = "https://pravaah.editorx.io/emhsports/class-form?mode=modeValue&classId=classValue
@@ -26,7 +26,7 @@ $w.onReady(function () {
   queries = wixLocation.query;
   let viewMode = wixWindow.viewMode;
   if (viewMode === "Preview") {
-    queries.mode = "edit";
+    queries.mode = "read";
     queries.classId = "49e337fa-422c-46ed-82f0-665a2365f0c2";
   }
   if (!queries) {
@@ -37,6 +37,7 @@ $w.onReady(function () {
     makeFormReadOnly();
   } else if (queries.mode === "edit") {
     loadFormData(queries.classId);
+    $w("#createClassButton").label = "Update Class";
   }
 
   // Repeaters OnItem Ready
@@ -75,7 +76,7 @@ $w.onReady(function () {
       currentlySelectedAddress.parkAddress = itemData.address;
       currentlySelectedAddress.gMap = src;
       $w("#googleMap").postMessage(src);
-      $w('#addAddress').enable();
+      $w("#addAddress").enable();
       $w("#repeaterSuggestion").collapse();
     });
   });
@@ -88,6 +89,9 @@ $w.onReady(function () {
     }
     $item("#isPrimary").onClick(() => {
       makePrimaryHandler(itemData._id);
+    });
+    $item("#removeAddressButton").onClick(() => {
+      removeAddressHandler(itemData._id);
     });
   });
   // Attaching event handlers to elements
@@ -109,6 +113,11 @@ $w.onReady(function () {
 });
 
 // Event Handlers
+const removeAddressHandler = (id) => {
+  const repeaterData = $w("#addressRepeater").data;
+  const filteredData = repeaterData.filter((el) => el._id !== id);
+  $w("#addressRepeater").data = filteredData;
+};
 const makePrimaryHandler = (id) => {
   const repeaterData = $w("#addressRepeater").data;
   $w("#addressRepeater").data = [];
@@ -124,7 +133,7 @@ const makePrimaryHandler = (id) => {
 };
 
 const queryLocationHandler = () => {
-  $w('#addAddress').disable();
+  $w("#addAddress").disable();
   autocomplete($w("#queryLocation").value).then((res) => {
     let predictions = res.predictions; // For simplicity we put the predictions in a new variable
     let suggestions = []; // We should create an empty array for the suggestions
@@ -152,7 +161,7 @@ const addAddressHandler = () => {
     ...currentlySelectedAddress,
   });
   $w("#addressRepeater").data = repeaterData;
-  $w('#addAddress').disable();
+  $w("#addAddress").disable();
 };
 
 const addTimeSlotHandler = () => {
@@ -187,16 +196,16 @@ const addTimeSlotHandler = () => {
   });
   let assignedCoachId = null;
   try {
-    if($w('#selectCoach').value === 'null'){
-      throw new Error('Coach is not assigned to a slot');
-    }else{
-      assignedCoachId = $w('#selectCoach').value;
-    }  
+    if ($w("#selectCoach").value === "null") {
+      throw new Error("Coach is not assigned to a slot");
+    } else {
+      assignedCoachId = $w("#selectCoach").value;
+    }
   } catch (error) {
     console.log(error);
     return;
   }
-  
+
   repeaterData.push({
     _id: `${month}${day}${startHour}${startMintute}${endHour}${endMintute}`,
     timeSlot: `Time Slot:-${startTimeString} - ${endTimeString} | Day:- ${getDayName(
@@ -251,15 +260,20 @@ const removePackageHandler = (id) => {
 
 const createClassHandler = () => {
   const errors = [];
-  errors.push(...inputValidator(),timeSlotRepeaterValidator(),...packageRepeaterValidator(),...addressRepeaterValidator());
-  console.log({errors});
+  errors.push(
+    ...inputValidator(),
+    timeSlotRepeaterValidator(),
+    ...packageRepeaterValidator(),
+    ...addressRepeaterValidator()
+  );
+  console.log({ errors });
   let allErrorText = "";
   errors.forEach((el) => {
-    if (el || el.length!==0) {
+    if (el || el.length !== 0) {
       allErrorText += `${el}\n`;
     }
   });
-  console.log({allErrorText});
+  console.log({ allErrorText });
   if (allErrorText.length > 0) {
     $w("#allErrors").text = allErrorText;
     $w("#allErrors").expand();
@@ -268,21 +282,25 @@ const createClassHandler = () => {
     console.log(getFormData());
 
     const toInsert = getFormData();
-    if (queries.mode === 'edit') {
-        toInsert._id = queries.classId
-        wixData.update('Classes', toInsert)
-            .then(res => {
-                console.log(res);
-            }).catch(err => {
-                console.log(err);
-            })
-    } else if (queries.mode === 'create') {
-        wixData.insert('Classes', toInsert)
-            .then(res => {
-                console.log(res);
-            }).catch(err => {
-                console.log(err);
-            })
+    if (queries.mode === "edit") {
+      toInsert._id = queries.classId;
+      wixData
+        .update("Classes", toInsert)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else if (queries.mode === "create") {
+      wixData
+        .insert("Classes", toInsert)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   }
 };
@@ -305,13 +323,13 @@ const getInputTimeSlot = () => {
   const timeSlots = [];
   $w("#timeSlotRepeater").forEachItem(($item, itemData, index) => {
     timeSlots.push({
-      _id:itemData._id,
+      _id: itemData._id,
       month: itemData.month,
       day: itemData.day,
       startTime: itemData.startTime,
       endTime: itemData.endTime,
-      monthDates:itemData.monthDates,
-      assignedCoachId:itemData.assignedCoachId,
+      monthDates: itemData.monthDates,
+      assignedCoachId: itemData.assignedCoachId,
     });
   });
   return timeSlots;
@@ -380,7 +398,7 @@ const formatDataForPackageRepater = (classPackage) => {
 const formatDataForParkHistoryRepeater = (parkHistory) => {
   const formattedData = [];
   parkHistory.forEach((el) => {
-    console.log({el});
+    console.log({ el });
     formattedData.push({
       _id: Math.floor(Math.random() * 10000).toString(),
       timeStamp: el.timeStamp,
@@ -437,7 +455,7 @@ const timeSlotInputValidator = () => {
   if ($w("#fromTime").value === "") {
     error += `End time is required`;
   }
-  if($w('#selectCoach').value === 'null' || $w('#selectCoach').value === ''){
+  if ($w("#selectCoach").value === "null" || $w("#selectCoach").value === "") {
     error += `Coach is Required`;
   }
   if (error === "") {
@@ -452,12 +470,12 @@ const addressRepeaterValidator = () => {
   if ($w("#addressRepeater").data.length === 0) {
     error += "No Address found";
   }
-  let isPrimaryPresent = false
+  let isPrimaryPresent = false;
   $w("#addressRepeater").forEachItem(($item, itemData, index) => {
     if (itemData.parkType === "primary") isPrimaryPresent = true;
   });
-  if(!isPrimaryPresent){
-    error+="Primary Park Address is required";
+  if (!isPrimaryPresent) {
+    error += "Primary Park Address is required";
   }
   return error;
 };
@@ -486,7 +504,7 @@ const timeSlotRepeaterValidator = () => {
 };
 
 const packageRepeaterValidator = () => {
-  let error = '';
+  let error = "";
   $w("#packageRepeater").forEachItem(($item, itemData, index) => {
     if (
       $item("#packageName").value == "" ||
@@ -527,10 +545,10 @@ const loadFormData = (classId) => {
       );
       $w("#instruction").value = classData.instruction;
       $w("#notice").value = classData.notice;
-      if(classData.classHistory){
+      if (classData.classHistory) {
         $w("#parkHistoryRepeater").data = formatDataForParkHistoryRepeater(
-        classData.classHistory
-      );
+          classData.classHistory
+        );
       }
       const packageRepeaterData = formatDataForPackageRepater(
         classData.package
@@ -566,6 +584,7 @@ const makeFormReadOnly = () => {
   $w(`#packagePrice`).disable();
   $w(`#removePackage`).disable();
   $w(`#addPackage`).disable();
+  $w("#createClassButton").collapse();
 };
 
 const getFormData = () => {
@@ -702,22 +721,25 @@ const getParkAddress = () => {
   return parkAddress;
 };
 
-const getCoachData =async ()=>{
+const getCoachData = async () => {
   let res = null;
   try {
-    res = await wixData.query('Coach').find();
-    if(res.totalCount === 0) throw new Error('Unable to get data from database');
-    res.items.forEach(el=>{
+    res = await wixData.query("Coach").find();
+    if (res.totalCount === 0)
+      throw new Error("Unable to get data from database");
+    res.items.forEach((el) => {
       coachesListOptions.push({
-        label:el.name,
-        value:el._id
-      })
-    })
-    $w('#selectCoach').options = coachesListOptions;
+        label: el.name,
+        value: el._id,
+      });
+    });
+    $w("#selectCoach").options = coachesListOptions;
   } catch (error) {
+    coachesListOptions.push({
+      label: "No Coach Found",
+      value: "No Coach Found",
+    });
+    $w("#selectCoach").options = coachesListOptions;
     console.log(error);
   }
-}
-
-
-
+};

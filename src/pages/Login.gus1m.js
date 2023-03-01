@@ -2,6 +2,7 @@
 import { currentMember, authentication } from 'wix-members';
 import { getRole } from 'backend/role.jsw';
 import wixLocation from 'wix-location';
+import { viewMode } from 'wix-window';
 
 
 
@@ -26,6 +27,9 @@ export async function login_click(event) {
     await authentication.login(email, password)
         .then(() => {
             console.log('Member is logged in');
+            if(viewMode === "Preview"){
+                wixLocation.to('/parent-dashboard');
+            }
         })
         .catch((error) => {
             $w('#erroMessage').text = '​Invalid Login Credentials !! Please try again'
