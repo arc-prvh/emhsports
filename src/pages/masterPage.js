@@ -1,12 +1,17 @@
 import { authentication, currentMember } from 'wix-members';
 import wixLocation from 'wix-location';
+import { viewMode } from 'wix-window';
 
 
 $w.onReady(async function () {
 
     // Dynamically Injecting the Dashboard Link for parents Ignore the error just wix being wierd
     const menuItems = $w('#horizontalMenu1').menuItems;
-    if (authentication.loggedIn()) {
+    let isLoggedIn = authentication.loggedIn();
+    if(viewMode === "Preview"){
+        isLoggedIn = true;
+    }
+    if (isLoggedIn) {
         menuItems.push({
             "link": "/parent-dashboard",
             "target": "_self",

@@ -4,6 +4,7 @@ import { getRole } from 'backend/role.jsw';
 import wixData from 'wix-data';
 import wixLocation from 'wix-location';
 import {local} from 'wix-storage';
+import wixWindow, { viewMode } from 'wix-window';
 
 /* -------------------------------Constants Start ---------------------------------------- */
 const inCart = 'InCart';     // AP Form is in cart
@@ -16,10 +17,11 @@ const noClassRegisteredMessage = 'Not enrolled in any class'
 
 let currentUserWixid = null;
 let currentStudentId = null;
+let isAccountDisabled = false;
 
 $w.onReady(async function () {
     // Checking if member is loggedin
-    if (!authentication.loggedIn()) {
+    if (!authentication.loggedIn() && viewMode !== "Preview") {
         console.log('Member is logged in redirecting to Login Page.');
         wixLocation.to('/login');
         return;
@@ -31,6 +33,10 @@ $w.onReady(async function () {
         wixLocation.to('/login')
     } else {
         await setCurrentUserWixId()
+        if(isAccountDisabled){
+            wixWindow.openLightbox('Account Disabled');
+            return;
+        }
         await renderStudentsList();
     }
     $w('#studentRepeater').onItemReady(($item, itemData, index) => {
@@ -142,6 +148,9 @@ async function setCurrentUserWixId() {
                 .find()
                 .then(parent => {
                     console.log('Parent', parent)
+                    if(parent.items[0].accountStatus !== "Active"){
+                        isAccountDisabled = true;
+                    }
                     currentUserWixid = parent.items[0]._id;
                     local.setItem('parentId', parent.items[0]._id);
                 }).catch(err => {
