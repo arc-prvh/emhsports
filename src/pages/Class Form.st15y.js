@@ -283,14 +283,14 @@ const createClassHandler = () => {
 			wixData
 				.update("Classes", toInsert)
 				.then((res) => {
-					// wixData
-					// 	.insertReference("Classes", "Coach", res._id, [...allCoachIds])
-					// 	.then(() => {
-					// 		console.log("Reference Inserted");
-					// 	})
-					// 	.catch((err) => {
-					// 		console.log(err);
-					// 	});
+					wixData
+						.insertReference("Classes", "coach", res._id, [...allCoachIds])
+						.then(() => {
+							console.log("Reference Inserted");
+						})
+						.catch((err) => {
+							console.log(err);
+						});
 					console.log("Success Msg");
 					$w("#messageContainer").expand();
 					$w("#formContainer").collapse();
@@ -319,6 +319,7 @@ const createClassHandler = () => {
 				})
 				.catch((err) => {
 					console.log(err);
+					wixWindow.scrollTo(0,0);
 					$w("#message").text = "Something Went Wrong";
 					$w("#messageContainer").expand();
 					$w("#formContainer").collapse();
