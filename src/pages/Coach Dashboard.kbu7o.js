@@ -1,10 +1,15 @@
-// API Reference: https://www.wix.com/velo/reference/api-overview/introduction
-// “Hello, World!” Example: https://learn-code.wix.com/en/article/1-hello-world
+import wixData from 'wix-data';
+import wixLocation from 'wix-location';
 
-$w.onReady(function () {
-    // Write your JavaScript here
+$w.onReady(async function () {
 
-    // To select an element by ID use: $w('#elementID')
-
-    // Click 'Preview' to run your code
+    const classData = await wixData.query('Classes').find()
+    const classDropdownData = classData.items.map(el => {
+        return {
+            label: el.parkName,
+            value: el._id
+        }
+    })
+    console.log(classDropdownData);
+    $w('#classDropdown').options = classDropdownData;
 });
