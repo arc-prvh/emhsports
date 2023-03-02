@@ -113,6 +113,7 @@ function getSignUp() {
 
 export async function submit_click(event) {
 	$w("#formBox").collapse();
+	wixWindow.scrollTo(0, 0);
 	startLoader();
 	$w("#loaderBox").expand();
 	const signUp = getSignUp();
@@ -146,6 +147,7 @@ export async function submit_click(event) {
 		$w("#loaderBox").collapse();
 		stopLoader();
 		$w("#successMessageBox").expand();
+		wixWindow.scrollTo(0, 0);
 	}
 }
 
