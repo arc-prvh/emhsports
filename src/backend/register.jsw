@@ -3,6 +3,7 @@ import { authentication, authorization } from 'wix-members-backend'
 
 const parentsRoleId = '118047c6-bf2b-4bbd-b6c6-7dee97347466';
 const coachRoleId = '37f0e75b-bee8-4941-a0b9-1ffc1b67ab2b';
+const tempCoachRoleId = '485005de-440b-4781-82a0-179e659fbb6f';
 const adminRoleId = '84e7be18-6f63-48f1-a3b6-5597b2387fb4';
 
 
@@ -46,7 +47,7 @@ export async function assignCoachRole(memberId) {
 export async function registerCoach(email, password) {
   const res = await authentication.register(email, password)
   const memberId = res.member._id
-  await authorization.assignRole(coachRoleId, memberId, {
+  await authorization.assignRole(tempCoachRoleId, memberId, {
     suppressAuth: true,
   });
   console.log('Member Id', memberId)
