@@ -183,10 +183,6 @@ $w.onReady(function () {
 		});
 	});
 
-	$w("#virtualScheduleRepeater").onItemReady(($item, itemData, index) => {
-		$item("#virtualClassSchedule").text = itemData.date;
-	});
-
 	$w("#selectedMonth").onItemReady(($item, itemData, index) => {
 		$item("#month").text = `${getMonthName(itemData.month)} (${itemData.startTime}-${itemData.endTime})`;
 		$item("#removeMonth").onClick(() => {
