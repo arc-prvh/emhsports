@@ -1,5 +1,8 @@
 import { currentMember } from "wix-members";
 import { openLightbox } from "wix-window";
+import wixData from 'wix-data';
+import wixLocation from 'wix-location';
+
 $w.onReady(async function () {
 	const accountValid = await isAccountValid();
 	console.log("Account Valid", accountValid);
@@ -10,6 +13,14 @@ $w.onReady(async function () {
 	}else{
         $w('#mainPage').expand()
     }
+
+	const classData = await wixData.query('Classes').find()
+    const classDropdownData = classData.items.map(el => {
+        return {
+            label: el.parkName,
+            value: el._id
+        }
+    })
 });
 
 const isAccountValid = async () => {
