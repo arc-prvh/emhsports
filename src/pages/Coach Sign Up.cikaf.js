@@ -107,7 +107,7 @@ function getSignUp() {
 		city: $w("#city").value,
 		address: $w("#address").value,
 		zipCode: $w("#zipcode").value,
-		status: "Active",
+		status: "Pending",
 	};
 }
 

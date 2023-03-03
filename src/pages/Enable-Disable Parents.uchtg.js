@@ -1,5 +1,12 @@
 import wixData from 'wix-data';
 import wixLocation from 'wix-location';
+
+
+// Account Status Coanstant
+const ACCOUNT_ACTIVE = "Active";    //Account is currently Active
+const ACCOUNT_BANNED = "Banned";    //Account is disabled by Admin
+
+
 $w.onReady(function () {
 
     const isValidRole = true //getRoleValidation('Admin')
@@ -11,7 +18,7 @@ $w.onReady(function () {
         console.log({itemData});
         $item('#name').text = itemData.name;
         $item('#email').text = itemData.email;
-        if (itemData.accountStatus === 'Active') {
+        if (itemData.accountStatus === ACCOUNT_ACTIVE) {
             $item('#switch').checked = true;
         } else {
             $item('#switch').checked = false;
@@ -42,10 +49,10 @@ const searchButtonHandler = async () => {
 
 const accountStatusChangeHandler = async (id) => {
     const data = await wixData.get('Parents', id);
-    if (data.accountStatus === 'Active') {
-        data.accountStatus = 'Disabled';
+    if (data.accountStatus === ACCOUNT_ACTIVE) {
+        data.accountStatus = ACCOUNT_BANNED;
     } else {
-        data.accountStatus = 'Active'
+        data.accountStatus = ACCOUNT_ACTIVE
     }
     try {
         await wixData.update('Parents',data)
