@@ -1,67 +1,77 @@
-import { authentication, authorization } from 'wix-members-backend'
+import { authentication, authorization } from "wix-members-backend";
 
-
-const parentsRoleId = '118047c6-bf2b-4bbd-b6c6-7dee97347466';
-const coachRoleId = '37f0e75b-bee8-4941-a0b9-1ffc1b67ab2b';
-const tempCoachRoleId = '485005de-440b-4781-82a0-179e659fbb6f';
-const adminRoleId = '84e7be18-6f63-48f1-a3b6-5597b2387fb4';
-
+const parentsRoleId = "118047c6-bf2b-4bbd-b6c6-7dee97347466";
+const coachRoleId = "37f0e75b-bee8-4941-a0b9-1ffc1b67ab2b";
+const tempCoachRoleId = "485005de-440b-4781-82a0-179e659fbb6f";
+const adminRoleId = "84e7be18-6f63-48f1-a3b6-5597b2387fb4";
 
 const options = {
-  suppressAuth: true,
-}
+	suppressAuth: true,
+};
 
 export async function register(email, password) {
-  const user = await authentication.register(email, password)
+	const user = await authentication.register(email, password);
 
-  const { member, sessionToken } = user;
+	const { member, sessionToken } = user;
 
-  return {
-    user,
-    sessionToken,
-    memberId: member._id
-  };
+	return {
+		user,
+		sessionToken,
+		memberId: member._id,
+	};
 }
 
 export async function registerParent(email, password) {
-  const registrationResult = await authentication.register(email, password)
-  const memberId = registrationResult.member._id;
-  await authorization.assignRole(parentsRoleId, memberId, {
-    suppressAuth: true,
-  });
-  console.log('Member Id', memberId)
-  return memberId;
+	const registrationResult = await authentication.register(email, password);
+	const memberId = registrationResult.member._id;
+	await authorization.assignRole(parentsRoleId, memberId, {
+		suppressAuth: true,
+	});
+	console.log("Member Id", memberId);
+	return memberId;
 }
 
 export async function authorize(memberId) {
-  await authorization.assignRole(parentsRoleId, memberId, {
-    suppressAuth: true,
-  });
+	await authorization.assignRole(parentsRoleId, memberId, {
+		suppressAuth: true,
+	});
 }
-
 
 export async function assignCoachRole(memberId) {
-  return await authorization.assignRole(coachRoleId, memberId, options);
+	try {
+		await authorization.removeRole(tempCoachRoleId, memberId, options);
+		await authorization.assignRole(coachRoleId, memberId, options);
+		return "Success";
+	} catch (error) {
+		return null;
+	}
 }
-
+export async function removeCoachRole(memberId) {
+	try {
+		await authorization.removeRole(coachRoleId, memberId, options);
+		return "Success";
+	} catch (error) {
+		return null;
+	}
+}
 export async function registerCoach(email, password) {
-  const res = await authentication.register(email, password)
-  const memberId = res.member._id
-  await authorization.assignRole(tempCoachRoleId, memberId, {
-    suppressAuth: true,
-  });
-  console.log('Member Id', memberId)
-  return memberId;
+	const res = await authentication.register(email, password);
+	const memberId = res.member._id;
+	await authorization.assignRole(coachRoleId, memberId, {
+		suppressAuth: true,
+	});
+	console.log("Member Id", memberId);
+	return memberId;
 }
 
 // Avanind's Code to regiter an Admin (Will implement a UI way later)
 // Do not use it in front-end
 export async function registerAdmin() {
-  const email = 'admin@gmail.com';
-  const password = '1234'
-  const res = await authentication.register(email, password)
-  const memberId = res.member._id
-  await authorization.assignRole(adminRoleId, memberId, {
-    suppressAuth: true,
-  });
+	const email = "admin@gmail.com";
+	const password = "1234";
+	const res = await authentication.register(email, password);
+	const memberId = res.member._id;
+	await authorization.assignRole(adminRoleId, memberId, {
+		suppressAuth: true,
+	});
 }
