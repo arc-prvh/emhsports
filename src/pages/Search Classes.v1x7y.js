@@ -580,6 +580,7 @@ const getAllDaysOfTimeSlot = (currentMonthText, timeSlot) => {
     let month = '';
     let day = '';
     let monthDates = [];
+
     timeSlot.forEach((el) => {
         if (el.month === currentMonthText) {
             month = el?.month;
@@ -1075,8 +1076,19 @@ export async function nextButtonInSelectStudentState_click(event) {
         for (const selectedClass of selectedClassMonthsData) {
             if (selectedClass.selectedPackage['name'] == 'One Day Pass') {
                 const selectedDate = $w('#datePicker').value;
-                const day = selectedDate.getDay();
-                const month = selectedDate.getMonth();
+                
+                toInsertInCart.push({
+                    ...selectedClass,
+                    selectedMonths: {
+                        ...selectedClass.selectedMonths,
+                        monthDates: [{
+                            _id: Math.floor(Math.random() * 100000).toString(),
+                            date: selectedDate,
+                        }],
+                    },
+                    student: student._id,
+                    parent: student.parent,
+                });
             } else {
                 toInsertInCart.push({
                     ...selectedClass,
@@ -1159,4 +1171,3 @@ const getTimeSlotInString = (month) => {
 /**
  * selectPackage_click is in repeter, you will find it in packageRepeater.onItemReady().
  */
-
