@@ -1,5 +1,6 @@
 import { currentMember } from "wix-members";
 import { openLightbox } from "wix-window";
+import { query } from "wix-data";
 $w.onReady(async function () {
 	const accountValid = await isAccountValid();
 	console.log("Account Valid", accountValid);
@@ -17,7 +18,9 @@ const isAccountValid = async () => {
 	console.log("ROle", role);
 	if (role[0].title !== "Coach") return false;
 	const member = await currentMember.getMember();
-	console.log("Member", member);
-	if (member.status === "Active") return true;
+    const res = await query("Coach").eq("memberId", member._id).find()
+	console.log("Member", member);    
+	console.log("Coach", res.items[0]);    
+	if (res.items[0].status === "Active") return true;
 	else return false;
 };
