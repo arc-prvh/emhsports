@@ -1073,11 +1073,17 @@ export async function nextButtonInSelectStudentState_click(event) {
     const toInsertInCart = [];
     for (const student of selectedStudents) {
         for (const selectedClass of selectedClassMonthsData) {
-            toInsertInCart.push({
-                ...selectedClass,
-                student: student._id,
-                parent: student.parent,
-            });
+            if (selectedClass.selectedPackage['name'] == 'One Day Pass') {
+                const selectedDate = $w('#datePicker').value;
+                const day = selectedDate.getDay();
+                const month = selectedDate.getMonth();
+            } else {
+                toInsertInCart.push({
+                    ...selectedClass,
+                    student: student._id,
+                    parent: student.parent,
+                });
+            }
         }
     }
 

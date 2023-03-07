@@ -297,6 +297,5 @@ export function checkout_click(event) {
     }).catch(err => {
         console.log('Error in updating AP Form data', err);
     })
-
     wixLocation.to('/parent-dashboard')
 }
