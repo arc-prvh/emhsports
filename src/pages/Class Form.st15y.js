@@ -319,7 +319,7 @@ const createClassHandler = () => {
 				})
 				.catch((err) => {
 					console.log(err);
-					wixWindow.scrollTo(0,0);
+					wixWindow.scrollTo(0, 0);
 					$w("#message").text = "Something Went Wrong";
 					$w("#messageContainer").expand();
 					$w("#formContainer").collapse();
