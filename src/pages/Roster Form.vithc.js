@@ -6,10 +6,12 @@ import wixData from 'wix-data';
 
 
 let currentUserWixid = null;
+let currentClassId = null;
 
 $w.onReady(async function () {
-	console.log('Roster Form Page Loaded');
+    currentClassId = local.getItem('currentClassId')
 	await setCurrentUserWixId()
+    const classData = await wixData.query('Classes').eq('_id', currentClassId).find().then(res => res.items[0])
 	console.log('Current User Wix Id', currentUserWixid);
 	$w('#rosterFormRepeater').onItemReady(($item, itemData, index) => {
 		$item('#studentName').text = itemData.studentName;
@@ -18,11 +20,14 @@ $w.onReady(async function () {
 		$item('#note').text = itemData.note;
 		$item('#phone').text = itemData.phone;
 	})
-
 });
 
 function formatGradeText(grade) {
 	return 'UD'
+}
+
+function generateParkDetailHeading(classData) {
+    return `${classData.parkName} - ${classData.parkAddress}`
 }
 
 
