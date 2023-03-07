@@ -3,6 +3,7 @@ import { currentMember, authentication } from 'wix-members';
 import { getRole } from 'backend/role.jsw';
 import wixLocation from 'wix-location';
 import { viewMode } from 'wix-window';
+import { timeline } from 'wix-animations';
 
 
 
@@ -21,6 +22,7 @@ $w.onReady(async function () {
 });
 
 export async function login_click(event) {
+    startLoader();
     const email = $w('#email').value;
     const password = $w('#password').value;
 
@@ -30,8 +32,10 @@ export async function login_click(event) {
             if(viewMode === "Preview"){
                 wixLocation.to('/parent-dashboard');
             }
+            stopLoader();
         })
         .catch((error) => {
+            stopLoader();
             $w('#erroMessage').text = '​Invalid Login Credentials !! Please try again'
             $w('#erroMessage').expand()
             console.error('Login Error', error);
@@ -52,6 +56,19 @@ function redirectMember(role) {
         console.log('Login Error, no roles found')
         return null;
     }
+}
+
+const startLoader = ()=>{
+    const loader = $w("#loaderImage");
+	timeline({ repeat: -1, yoyo: false }).add(loader, { rotate: 360, duration: 1000, easing: "easeLinear" }).play();
+    $w('#loginBox').collapse();
+    $w('#loaderBox').expand();
+}
+const stopLoader = ()=>{
+    const loader = $w("#loaderImage");
+	timeline({ repeat: -1, yoyo: false }).add(loader, { rotate: 360, duration: 1000, easing: "easeLinear" }).pause();
+    $w('#loaderBox').collapse();
+    $w('#loginBox').expand();
 }
 
 
