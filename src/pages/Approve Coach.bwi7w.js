@@ -35,9 +35,6 @@ $w.onReady(function () {
 
 	// Elements Mapped with Event Handlers
 	$w("#searchButton").onClick(searchButtonHandler);
-	$w("#searchButton").onClick(() => {
-		wixLocation.to("/admin-dashboard");
-	});
 
 	// Getting All Pending Coaches on page Load
 	getAllCoachesPendingCoaches();
