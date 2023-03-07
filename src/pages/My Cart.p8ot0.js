@@ -79,8 +79,6 @@ $w.onReady(async function () {
         wixLocation.to('/search');
     }
 
-
-
     // Starting the loading order detail animation
     startOrderDetailLoadingAnimation()   
 
@@ -92,22 +90,18 @@ $w.onReady(async function () {
         $w('#parentEmail').text = parentData.email;
     }
 
-    setFormsToShowInCart().then(_ => {
-        formatDataForRepeater(formsToShowInCart).then(res => {
-            renderedForms = res
-            $w('#orderDetailRepeater').data = res;
-            loadingOrderDetails = false;
-            $w('#orderDetailRepeater').expand();
-            $w('#orderDetailMessage').collapse()
-            updatePrice()
-        }).catch(err => {
-            console.log('Error in formatting data for repeater', err)
-        })
+    await setFormsToShowInCart()
+
+    formatDataForRepeater(formsToShowInCart).then(res => {
+        renderedForms = res
+        $w('#orderDetailRepeater').data = res;
+        loadingOrderDetails = false;
+        $w('#orderDetailRepeater').expand();
+        $w('#orderDetailMessage').collapse()
+        updatePrice()
     }).catch(err => {
-        console.log('Error in setting form data', err)
+        console.log('Error in formatting data for repeater', err)
     })
-
-
 });
 
 
