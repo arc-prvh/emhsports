@@ -22,7 +22,22 @@ $w.onReady(async function () {
 		$item('#note').text = itemData.note;
 		$item('#phone').text = itemData.phone;
 	})
+
+    await wixData.query('Students').find().then(res => {
+        console.log('Students', res.items);
+        $w('#rosterFormRepeater').data = res.items.map(item => {
+            return {
+                studentName: item.name,
+                grade: formatGradeText(item.gradeLevel),
+                age: item.age,
+                note: item.note,
+                phone: item.phone
+            }
+        })
+    })
 });
+
+
 
 function formatGradeText(grade) {
 	return 'UD'
