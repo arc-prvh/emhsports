@@ -39,7 +39,7 @@ let loadingOrderDetails = true
 let formsToShowInCart = null;
 let renderedForms = null;
 
-$w.onReady(function () {
+$w.onReady(async function () {
     $w('#orderDetailRepeater').onItemReady(($item, itemData, index) => {
         $item('#studentName').text = itemData.name;
         $item('#studentAddress').text = itemData.address;
@@ -79,38 +79,29 @@ $w.onReady(function () {
         wixLocation.to('/search');
     }
 
-
-
     // Starting the loading order detail animation
-    startOrderDetailLoadingAnimation()
+    startOrderDetailLoadingAnimation()   
 
-    // Using then to avoid any issues related asynchronous 
-    setCurrentUserWixId().then(_ => {
+    await setCurrentUserWixId()
 
-        if (parentData) {
-            $w('#parentName').text = parentData.name;
-            $w('#parentPhone').text = parentData.phone;
-            $w('#parentEmail').text = parentData.email;
-        }
+    if (parentData) {
+        $w('#parentName').text = parentData.name;
+        $w('#parentPhone').text = parentData.phone;
+        $w('#parentEmail').text = parentData.email;
+    }
 
-        // Using "then" to avoid any issues related asynchronous 
-        setFormsToShowInCart().then(_ => {
-            formatDataForRepeater(formsToShowInCart).then(res => {
-                renderedForms = res
-                $w('#orderDetailRepeater').data = res;
-                loadingOrderDetails = false;
-                $w('#orderDetailRepeater').expand();
-                $w('#orderDetailMessage').collapse()
-                updatePrice()
-            }).catch(err => {
-                console.log('Error in formatting data for repeater', err)
-            })
-        }).catch(err => {
-            console.log('Error in setting form data', err)
-        })
+    await setFormsToShowInCart()
 
+    formatDataForRepeater(formsToShowInCart).then(res => {
+        renderedForms = res
+        $w('#orderDetailRepeater').data = res;
+        loadingOrderDetails = false;
+        $w('#orderDetailRepeater').expand();
+        $w('#orderDetailMessage').collapse()
+        updatePrice()
+    }).catch(err => {
+        console.log('Error in formatting data for repeater', err)
     })
-
 });
 
 
@@ -306,6 +297,5 @@ export function checkout_click(event) {
     }).catch(err => {
         console.log('Error in updating AP Form data', err);
     })
-
     wixLocation.to('/parent-dashboard')
 }
