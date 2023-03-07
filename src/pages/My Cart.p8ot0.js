@@ -232,10 +232,10 @@ async function formatDataForRepeater(formData) {
                 address: student.address,
                 parkName: classData.parkName,
                 county: classData.county,
-                day: getDayByMonth(classData.timeslot, data.selectedMonths),
-                months: data['selectedMonths'].monthLabel,
+                day: week[data.selectedMonths.day],
+                months: months[data['selectedMonths'].month],
                 paymentMethod: 'Self Payment',
-                timeSlot: prepareTimeSlotForOneDayPass(data.selectedMonths),
+                timeSlot: `${data.selectedMonths['startTime']} - ${data.selectedMonths['endTime']}`,
                 pricing: data.selectedPackage['cost'],
                 sports: getSportName(data.selectedMonths.monthValue),
             });
@@ -370,3 +370,30 @@ export function checkout_click(event) {
         });
     wixLocation.to('/parent-dashboard');
 }
+
+let a = {
+    "startTime": "7:30 AM",
+    "monthDates": [
+      {
+        "_id": "87",
+        "date": "Mar 03, 2023"
+      },
+      {
+        "_id": "185",
+        "date": "Mar 10, 2023"
+      },
+      {
+        "_id": "393",
+        "date": "Mar 17, 2023"
+      },
+      {
+        "_id": "339",
+        "date": "Mar 24, 2023"
+      }
+    ],
+    "_id": "03507300830",
+    "assignedCoachId": "No Coach Found",
+    "endTime": "8:30 AM",
+    "day": "5",
+    "month": "03"
+  }

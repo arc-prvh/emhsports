@@ -202,21 +202,25 @@ const renderStudentClassDetails = async (studentId, studentName) => {
     studentClassQuery1.or(studentClassQuery2)
         .find()
         .then(async res => {
+            console.log('res', res)
             if (res.items.length > 0) {
                 const sportsDataArray = await wixData.query('MonthAndSports').find().then(res => res.items)
                 const sportsDataObject = convertToObject(sportsDataArray)
                 for (const form of res.items) {
-                    registeredClassData.push({
-                        _id: form._id,
-                        className: form['class'].parkName,
-                        day : form['class'].day,
-                        startTime: form['class'].startTime,
-                        endTime: form['class'].endTime,
-                        timeslot: getTimeSlotByMonth(form['class'].timeslot, form.selectedMonths),
-                        paymentStatus: form.status,
-                        months: form.selectedMonths.monthLabel,
-                        sports: getSportsByMonth(form.selectedMonths, sportsDataObject)
-                    })
+                    if (form.selectedPackage['name'] != 'One Day Pass') {
+                        registeredClassData.push({
+                            _id: form._id,
+                            className: form['class'].parkName,
+                            day : form['class'].day,
+                            startTime: form['class'].startTime,
+                            endTime: form['class'].endTime,
+                            timeslot: getTimeSlotByMonth(form['class'].timeslot, form.selectedMonths),
+                            paymentStatus: form.status,
+                            months: form.selectedMonths.monthLabel,
+                            sports: getSportsByMonth(form.selectedMonths, sportsDataObject)
+                        })
+                    }
+                   
                 }
                 if (registeredClassData.length === 0) {
                     $w('#noClassFoundMsgBox').expand();
