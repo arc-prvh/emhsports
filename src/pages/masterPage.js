@@ -12,8 +12,9 @@ $w.onReady(async function () {
         isLoggedIn = true;
     }
     if (isLoggedIn) {
+        const url =await getDashboardURL()
         menuItems.push({
-            "link": "/parent-dashboard",
+            "link": url,
             "target": "_self",
             "label": "Dashboard",
             "menuItems": []
@@ -86,5 +87,25 @@ function redirectMember(role) {
     }else{
         console.log('Login Error, no roles found')
         return null;
+    }
+}
+
+const getDashboardURL = async() =>{
+    let roles = null;
+    try {
+        roles = await currentMember.getRoles();
+    } catch (error) {
+        console.log(error);
+    }
+    const role = roles[0].title;
+    if (role === 'Admin') {
+        return '/admin-dashboard';
+    } else if (role === 'Coach') {
+        return '/coach-dashboard';
+    } else if (role === 'Parent') {
+        return '/parent-dashboard';
+    }else{
+        console.log('Login Error, no roles found')
+        return '/parent-dashboard';
     }
 }
