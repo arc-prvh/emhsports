@@ -12,6 +12,44 @@ const paid = 'Paid'        // Parents has paid for the class
 const underReview = 'UnderReview' // Parents requested for school to pay, but admin hasn't approved yet
 const approved = 'Approved'    // Request for school payment is approved
 const rejected = 'Rejected'    // Request for school payment is rejected
+
+
+// Weeks
+const week = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday',
+};
+
+// Months
+const months = {
+    1: 'January',
+    2: 'February',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December',
+    '01': 'January',
+    '02': 'February',
+    '03': 'March',
+    '04': 'April',
+    '05': 'May',
+    '06': 'June',
+    '07': 'July',
+    '08': 'August',
+    '09': 'September',
+};
+
 /* -------------------------------Constants End ----------------------------------------- */
 const noClassRegisteredMessage = 'Not enrolled in any class'
 
@@ -190,6 +228,30 @@ function calculateAge(dateString) {
     return age;
 }
 
+export const getSportName = (selectedMonth) => {
+    const month = selectedMonth || '09';
+    const months = ['09', '10', '11', '12', '01', '02', '03', '04', '05'];
+    const sports = [
+        'Soccer',
+        'Football',
+        'Softball',
+        'Kickball',
+        'Basketball',
+        'Nerf Dodgeball',
+        'Handball',
+        'Track and Field',
+        'Soccer',
+    ];
+    let sport = '';
+    months.forEach((el, index) => {
+        if (el === month) {
+            sport = sports[index];
+            return;
+        }
+    });
+    return sport;
+};
+
 const renderStudentClassDetails = async (studentId, studentName) => {
     currentStudentId = studentId;
     $w('#classDetailHeading').text = `${studentName}'s Class Details`;
@@ -202,21 +264,25 @@ const renderStudentClassDetails = async (studentId, studentName) => {
     studentClassQuery1.or(studentClassQuery2)
         .find()
         .then(async res => {
+            console.log('res', res)
             if (res.items.length > 0) {
                 const sportsDataArray = await wixData.query('MonthAndSports').find().then(res => res.items)
                 const sportsDataObject = convertToObject(sportsDataArray)
                 for (const form of res.items) {
-                    registeredClassData.push({
-                        _id: form._id,
-                        className: form['class'].parkName,
-                        day : form['class'].day,
-                        startTime: form['class'].startTime,
-                        endTime: form['class'].endTime,
-                        timeslot: getTimeSlotByMonth(form['class'].timeslot, form.selectedMonths),
-                        paymentStatus: form.status,
-                        months: form.selectedMonths.monthLabel,
-                        sports: getSportsByMonth(form.selectedMonths, sportsDataObject)
-                    })
+                    if (form.selectedPackage['name'] != 'One Day Pass') {
+                        registeredClassData.push({
+                            _id: form._id,
+                            className: form['class'].parkName,
+                            day : week[form.selectedMonths.day],
+                            startTime: form['class'].startTime,
+                            endTime: form['class'].endTime,
+                            timeslot: `${form.selectedMonths['startTime']} - ${form.selectedMonths['endTime']}`,
+                            paymentStatus: form.status,
+                            months: months[form['selectedMonths'].month],
+                            sports: getSportName(form.selectedMonths.monthValue)
+                        })
+                    }
+                   
                 }
                 if (registeredClassData.length === 0) {
                     $w('#noClassFoundMsgBox').expand();

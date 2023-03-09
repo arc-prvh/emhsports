@@ -6,11 +6,15 @@ import wixData from 'wix-data';
 
 
 let currentUserWixid = null;
+let currentClassId = null;
 
 $w.onReady(async function () {
-	console.log('Roster Form Page Loaded');
-	await setCurrentUserWixId()
+    currentClassId = 'e01ca84e-8d4a-42eb-a5d2-06d6ee1d13bf' // local.getItem('currentClassId')
+	// await setCurrentUserWixId()
+    const classData = await wixData.query('Classes').eq('_id', currentClassId).find().then(res => res.items[0])
 	console.log('Current User Wix Id', currentUserWixid);
+    console.log('Class Data', classData);
+    $w('#headingClassDetails').text = '(Active) ' + generateParkDetailHeading(classData);
 	$w('#rosterFormRepeater').onItemReady(($item, itemData, index) => {
 		$item('#studentName').text = itemData.studentName;
 		$item('#grade').text = itemData.grade;
@@ -19,10 +23,28 @@ $w.onReady(async function () {
 		$item('#phone').text = itemData.phone;
 	})
 
+    await wixData.query('Students').find().then(res => {
+        console.log('Students', res.items);
+        $w('#rosterFormRepeater').data = res.items.map(item => {
+            return {
+                studentName: item.name,
+                grade: formatGradeText(item.gradeLevel),
+                age: item.age,
+                note: item.note,
+                phone: item.phone
+            }
+        })
+    })
 });
+
+
 
 function formatGradeText(grade) {
 	return 'UD'
+}
+
+function generateParkDetailHeading(classData) {
+    return `${classData.city}, ${classData.state} - ${classData.formattedAddress[0].parkAddress}`
 }
 
 
